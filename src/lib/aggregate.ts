@@ -108,3 +108,52 @@ export function teamBudgetStatus(data: Dataset): BudgetStatus[] {
     })
     .sort((a, b) => b.utilization - a.utilization);
 }
+
+export interface AgentSummary {
+  agentId: string;
+  name: string;
+  platform: string;
+  ownerName: string;
+  team: Team;
+  modelId: string;
+  workload: string;
+  mtdCost: number;
+  daily: Array<{ date: string; cost: number }>;
+  /** Set when the agent's worst day exceeds 3x its median daily cost. */
+  anomaly?: { date: string; cost: number; ratio: number };
+}
+
+export function agentSummaries(data: Dataset): AgentSummary[] {
+  const mtd = monthRecords(data);
+  const personName = new Map(data.people.map((p) => [p.id, p.name]));
+  const personTeam = new Map(data.people.map((p) => [p.id, p.team]));
+  return data.agents
+    .map((agent) => {
+      const dailyMap = new Map<string, number>();
+      for (const r of data.records) {
+        if (r.agentId === agent.id) {
+          dailyMap.set(r.date, (dailyMap.get(r.date) ?? 0) + r.cost);
+        }
+      }
+      const daily = [...dailyMap.entries()]
+        .map(([date, cost]) => ({ date, cost }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+      const costs = daily.map((d) => d.cost).sort((a, b) => a - b);
+      const median = costs[Math.floor(costs.length / 2)] ?? 0;
+      const worst = daily.reduce((m, d) => (d.cost > m.cost ? d : m), daily[0]);
+      const ratio = median > 0 ? worst.cost / median : 0;
+      return {
+        agentId: agent.id,
+        name: agent.name,
+        platform: agent.platform,
+        ownerName: personName.get(agent.ownerId) ?? agent.ownerId,
+        team: personTeam.get(agent.ownerId)!,
+        modelId: agent.modelId,
+        workload: agent.workload,
+        mtdCost: mtd.filter((r) => r.agentId === agent.id).reduce((s, r) => s + r.cost, 0),
+        daily,
+        anomaly: ratio > 3 ? { date: worst.date, cost: worst.cost, ratio } : undefined,
+      };
+    })
+    .sort((a, b) => b.mtdCost - a.mtdCost);
+}

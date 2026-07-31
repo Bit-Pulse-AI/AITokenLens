@@ -1,27 +1,10 @@
 import { useMemo, useState } from "react";
 import type { Dataset } from "../data/types";
 import { personSummaries, type PersonSummary } from "../lib/aggregate";
+import Sparkline from "../ui/Sparkline";
 import { LAYER_VAR, shortDate, usdFull } from "../ui/format";
 
 type SortKey = "name" | "role" | "team" | "mtdCost";
-
-function Sparkline({ points }: { points: Array<{ date: string; cost: number }> }) {
-  const w = 460, h = 56, pad = 2;
-  const max = Math.max(...points.map((p) => p.cost), 1);
-  const path = points
-    .map((p, i) => {
-      const x = pad + (i / (points.length - 1)) * (w - pad * 2);
-      const y = h - pad - (p.cost / max) * (h - pad * 2);
-      return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
-    })
-    .join(" ");
-  return (
-    <svg width="100%" viewBox={`0 0 ${w} ${h}`} role="img" aria-label="90-day daily spend trend">
-      <line x1={pad} y1={h - pad} x2={w - pad} y2={h - pad} stroke="var(--baseline)" />
-      <path d={path} fill="none" stroke="var(--series-cloud)" strokeWidth={2} strokeLinejoin="round" />
-    </svg>
-  );
-}
 
 function DrillDown({ row, providerLayer }: { row: PersonSummary; providerLayer: Map<string, keyof typeof LAYER_VAR> }) {
   const max = row.byProvider[0]?.cost ?? 1;

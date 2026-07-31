@@ -67,3 +67,27 @@ describe("teamBudgetStatus", () => {
     }
   });
 });
+
+describe("agentSummaries", () => {
+  test("covers every agent; flags exactly the runaway agent with spike date", async () => {
+    const { agentSummaries } = await import("./aggregate");
+    const rows = agentSummaries(data);
+    expect(rows.length).toBe(data.agents.length);
+    const flagged = rows.filter((r) => r.anomaly);
+    expect(flagged.length).toBe(1);
+    expect(flagged[0].name).toBe("invoice-reconciler");
+    const dates = [...new Set(data.records.map((r) => r.date))].sort();
+    expect(flagged[0].anomaly!.date).toBe(dates[dates.length - 4]);
+    expect(flagged[0].anomaly!.ratio).toBeGreaterThan(3);
+  });
+
+  test("agent MTD costs sum to agent-attributed MTD spend", async () => {
+    const { agentSummaries } = await import("./aggregate");
+    const rows = agentSummaries(data);
+    const sum = rows.reduce((s, r) => s + r.mtdCost, 0);
+    const expected = monthRecords(data)
+      .filter((r) => r.agentId)
+      .reduce((s, r) => s + r.cost, 0);
+    expect(sum).toBeCloseTo(expected, 4);
+  });
+});

@@ -372,3 +372,13 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   padding: 28px 12px;
   font-size: 13px;
 }
+
+/* ---------- Live data badge ---------- */
+.live-badge {
+  color: var(--delta-good);
+  border: 1px solid color-mix(in oklab, var(--delta-good) 40%, transparent);
+  border-radius: 999px;
+  padding: 2px 10px;
+  margin-right: 12px;
+  font-weight: 700;
+}

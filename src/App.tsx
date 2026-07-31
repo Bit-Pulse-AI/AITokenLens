@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import "./theme.css";
+import { mapAnthropicLive, mergeLiveAnthropic, type LiveSnapshot } from "./data/anthropicLive";
 import { generateDataset } from "./data/generate";
 import AgentsView from "./views/AgentsView";
 import AlertsView from "./views/AlertsView";
@@ -16,7 +17,17 @@ const fromHash = (): View =>
   VIEWS.find((v) => `#${slug(v)}` === window.location.hash) ?? "Overview";
 
 export default function App() {
-  const data = useMemo(() => generateDataset(), []);
+  const [live, setLive] = useState<LiveSnapshot | null>(null);
+  useEffect(() => {
+    fetch("live/anthropic.json")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((snap) => snap?.usage && setLive(snap))
+      .catch(() => {});
+  }, []);
+  const data = useMemo(() => {
+    const base = generateDataset();
+    return live ? mergeLiveAnthropic(base, mapAnthropicLive(live.usage, live.cost)) : base;
+  }, [live]);
   const [view, setViewState] = useState<View>(fromHash);
   const [theme, setTheme] = useState<Theme>("auto");
 
@@ -45,6 +56,11 @@ export default function App() {
             AIToken<em>Lens</em>
           </h1>
           <span className="masthead-meta">
+            {live && (
+              <span className="live-badge" title={`Anthropic usage fetched ${live.fetchedAt}`}>
+                ● live · anthropic
+              </span>
+            )}
             AI spend ledger · Acme Corp · July 2026
           </span>
         </div>

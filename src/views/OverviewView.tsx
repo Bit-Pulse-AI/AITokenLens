@@ -6,7 +6,6 @@ import {
   CartesianGrid,
   Cell,
   LabelList,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
@@ -18,6 +17,7 @@ import {
   providerTotals,
   teamBudgetStatus,
 } from "../lib/aggregate";
+import { useContainerWidth } from "../ui/useContainerWidth";
 import { LAYER_LABEL, LAYER_VAR, pct, shortDate, usd, usdFull } from "../ui/format";
 
 const SEV_ICON = { critical: "▲", warning: "◆", info: "●" } as const;
@@ -46,6 +46,8 @@ function TrendTooltip({ active, payload, label }: any) {
 }
 
 export default function OverviewView({ data }: { data: Dataset }) {
+  const trend = useContainerWidth<HTMLDivElement>();
+  const prov = useContainerWidth<HTMLDivElement>();
   const series = dailyLayerSeries(data);
   const providers = providerTotals(data);
   const budgets = teamBudgetStatus(data);
@@ -113,8 +115,9 @@ export default function OverviewView({ data }: { data: Dataset }) {
             </span>
           ))}
         </div>
-        <ResponsiveContainer width="100%" height={260}>
-          <AreaChart data={series} margin={{ top: 4, right: 8, bottom: 0, left: 8 }}>
+        <div className="chart-box" ref={trend.ref}>
+          {trend.width > 0 && (
+          <AreaChart width={trend.width} height={260} data={series} margin={{ top: 4, right: 8, bottom: 0, left: 8 }}>
             <CartesianGrid stroke="var(--grid)" vertical={false} />
             <XAxis
               dataKey="date"
@@ -134,15 +137,17 @@ export default function OverviewView({ data }: { data: Dataset }) {
             <Area dataKey="saas-seat" stackId="1" isAnimationActive={false} fill="var(--series-seat)" stroke="var(--surface)" strokeWidth={2} fillOpacity={1} />
             <Area dataKey="bespoke-api" stackId="1" isAnimationActive={false} fill="var(--series-api)" stroke="var(--surface)" strokeWidth={2} fillOpacity={1} />
           </AreaChart>
-        </ResponsiveContainer>
+          )}
+        </div>
       </div>
 
       <div className="grid two-col">
         <div className="card">
           <h2>Spend by provider · MTD</h2>
           <p className="sub">Colored by spend layer; every bar is labeled.</p>
-          <ResponsiveContainer width="100%" height={providers.length * 34 + 24}>
-            <BarChart data={providers} layout="vertical" margin={{ top: 0, right: 64, bottom: 0, left: 8 }}>
+          <div className="chart-box" ref={prov.ref}>
+            {prov.width > 0 && (
+            <BarChart width={prov.width} height={providers.length * 34 + 24} data={providers} layout="vertical" margin={{ top: 0, right: 64, bottom: 0, left: 8 }}>
               <XAxis type="number" hide />
               <YAxis
                 type="category"
@@ -164,7 +169,8 @@ export default function OverviewView({ data }: { data: Dataset }) {
                 />
               </Bar>
             </BarChart>
-          </ResponsiveContainer>
+            )}
+          </div>
         </div>
 
         <div className="card">

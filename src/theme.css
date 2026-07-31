@@ -144,6 +144,8 @@ body {
   padding: 20px 24px 64px;
 }
 .grid { display: grid; gap: 16px; }
+.grid > * { min-width: 0; }
+.chart-box { width: 100%; overflow: hidden; }
 .kpis { grid-template-columns: repeat(4, 1fr); }
 .two-col { grid-template-columns: 3fr 2fr; align-items: start; }
 @media (max-width: 900px) {
@@ -344,3 +346,29 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .rec-card { border: 1px solid var(--grid); border-radius: 6px; padding: 12px 14px; }
 .rec-title { font-weight: 600; margin: 8px 0 0; font-size: 13.5px; }
 .rec-savings { display: flex; align-items: baseline; gap: 6px; margin-top: auto; }
+
+/* ---------- Connectors ---------- */
+.status-pill {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+.status-connected { color: var(--delta-good); border: 1px solid color-mix(in oklab, var(--delta-good) 40%, transparent); }
+.status-available { color: var(--series-cloud); border: 1px solid color-mix(in oklab, var(--series-cloud) 40%, transparent); }
+.status-planned { color: var(--muted); border: 1px dashed var(--baseline); }
+.cover { font-size: 13px; }
+.cover-yes { color: var(--delta-good); }
+.cover-alloc { color: var(--series-cloud); }
+.cover-no { color: var(--baseline); }
+
+/* ---------- Empty states ---------- */
+.empty-state {
+  color: var(--muted);
+  text-align: center;
+  padding: 28px 12px;
+  font-size: 13px;
+}

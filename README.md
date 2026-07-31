@@ -10,7 +10,9 @@ One place to see AI costs across all three spend layers:
 
 …with per-person and per-agent attribution, budgets, anomaly alerts, and model-choice savings recommendations.
 
-> Demo prototype: mock data only, no credentials, no backend. The demo narrative is *"the surprise bill you caught in time."*
+> Demo prototype: deterministic mock data, no credentials, no backend. The demo narrative is *"the surprise bill you caught in time."*
+
+![Overview](docs/screenshots/overview.png)
 
 ## Run it
 
@@ -19,6 +21,41 @@ npm install
 npm run dev
 ```
 
+Open http://localhost:5173. `npm test` runs the 15-test suite; `npm run build` produces a static bundle.
+
+## The 5-minute demo script
+
+Walk the five tabs in order — the seeded data tells one story: **a runaway agent
+loop was caught before the invoice arrived.**
+
+| Step | View | What to show | The one-liner |
+|---|---|---|---|
+| 1 | **Overview** | The alert ticker and the spike on July 28 in the 90-day trend | "Every AI dollar — cloud, seats, and API keys — in one ledger. See that spike?" |
+| 2 | **Overview** (lower) | Provider bars + team budgets | "AWS Bedrock is 47% of spend, and Product Engineering is 140% of budget — we knew on day 3, not at invoice time." |
+| 3 | **Agents** | The red `invoice-reconciler` card | "This agent re-processed the same invoice batch 312 times in one night — 4.4× its normal day. The anomaly threshold caught it." |
+| 4 | **Alerts & Budgets** | The savings recommendations | "And it's not just alarms — routing one summarization agent to a mini-tier model saves $2.7K/month. $3.7K/month identified in total, computed from real usage × list prices." |
+| 5 | **People** | Filter by team, click a person | "Every seat and every API key rolls up to a person — this is the per-person attribution nobody else has across all three layers." |
+| 6 | **Connectors** | The three tiers | "We're honest about where vendors lock data in admin consoles — and we import it anyway. Everyone faces the same wall; we productized the workaround." |
+
+Bonus: click **theme** (top right) to show the dark mode — same validated palette, restepped for dark surfaces.
+
+## The five views
+
+| | |
+|---|---|
+| ![People](docs/screenshots/people.png) | ![Agents](docs/screenshots/agents.png) |
+| ![Alerts & Budgets](docs/screenshots/alerts-budgets.png) | ![Connectors](docs/screenshots/connectors.png) |
+
+![Overview dark](docs/screenshots/overview-dark.png)
+
+## How it's built
+
+- **Vite + React + TypeScript**, Recharts for the stacked trend and provider bars.
+- **Deterministic seeded dataset** ([src/data/generate.ts](src/data/generate.ts)) — 90 days, 24 people, 6 agents, ~5,850 records. Three story beats are seeded *and test-enforced*: the runaway loop (day −3, >3× median), one team ~40% over budget, and a right-sizing opportunity ≥$2.5K/mo. Anthropic model prices are real list prices; other vendors' are plausible mocks.
+- **Recommendations are computed, never hardcoded** — savings come from actual mock usage × list-price deltas (`computeRecommendations` in [src/data/generate.ts](src/data/generate.ts)).
+- **Theme** — light/dark from a CVD-validated categorical palette; the three spend layers map to fixed palette slots.
+- **Screenshots** — `node scripts/screenshots.mjs` captures all views headless via the local Chrome.
+
 ## Status
 
-Work is tracked via [milestones](../../milestones) and [issues](../../issues). Design: [docs/design.md](docs/design.md).
+Built milestone-by-milestone via [issues](../../issues) and [PRs](../../pulls); design doc in [docs/design.md](docs/design.md). The dashboard is a demo of the product vision documented in the accompanying research report (market validation, competitor pricing, and the API integration map behind the Connectors tiers).

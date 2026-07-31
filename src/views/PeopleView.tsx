@@ -115,11 +115,22 @@ export default function PeopleView({ data }: { data: Dataset }) {
             </tr>
           </thead>
           <tbody>
+            {rows.length === 0 && (
+              <tr>
+                <td colSpan={5}>
+                  <div className="empty-state">
+                    No people match these filters — try widening the team or role.
+                  </div>
+                </td>
+              </tr>
+            )}
             {rows.map((r) => (
               <tr
                 key={r.personId}
                 className={selectedRow?.personId === r.personId ? "selected" : undefined}
                 onClick={() => setSelected(r.personId)}
+                onKeyDown={(e) => e.key === "Enter" && setSelected(r.personId)}
+                tabIndex={0}
                 style={{ cursor: "pointer" }}
               >
                 <td><b>{r.name}</b></td>

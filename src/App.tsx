@@ -1,24 +1,68 @@
+import { useEffect, useMemo, useState } from "react";
+import "./theme.css";
 import { generateDataset } from "./data/generate";
+import OverviewView from "./views/OverviewView";
+import PeopleView from "./views/PeopleView";
 
-const data = generateDataset();
-const month = data.generatedAt.slice(0, 7);
-const mtd = data.records
-  .filter((r) => r.date.startsWith(month))
-  .reduce((s, r) => s + r.cost, 0);
+const VIEWS = ["Overview", "People", "Agents", "Alerts & Budgets", "Connectors"] as const;
+type View = (typeof VIEWS)[number];
+type Theme = "auto" | "light" | "dark";
 
 export default function App() {
+  const data = useMemo(() => generateDataset(), []);
+  const [view, setView] = useState<View>("Overview");
+  const [theme, setTheme] = useState<Theme>("auto");
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === "auto") root.removeAttribute("data-theme");
+    else root.setAttribute("data-theme", theme);
+  }, [theme]);
+
   return (
-    <main style={{ fontFamily: "system-ui", padding: "2rem" }}>
-      <h1>AITokenLens</h1>
-      <p>Centralized AI spend &amp; token-cost tracking — prototype (M1 foundation).</p>
-      <p>
-        Seeded dataset: {data.people.length} people, {data.agents.length} agents,{" "}
-        {data.records.length.toLocaleString()} spend records over {data.days} days.
-      </p>
-      <p>
-        AI spend, month to date:{" "}
-        <strong>${Math.round(mtd).toLocaleString()}</strong> — dashboard views land in M2.
-      </p>
-    </main>
+    <>
+      <header className="masthead">
+        <div className="masthead-row">
+          <h1 className="wordmark">
+            AIToken<em>Lens</em>
+          </h1>
+          <span className="masthead-meta">
+            AI spend ledger · Acme Corp · July 2026
+          </span>
+        </div>
+        <hr className="double-rule" />
+        <nav className="nav" aria-label="Views">
+          {VIEWS.map((v) => (
+            <button key={v} aria-current={view === v} onClick={() => setView(v)}>
+              {v}
+            </button>
+          ))}
+          <span className="spacer" />
+          <button
+            className="theme-toggle"
+            onClick={() =>
+              setTheme(theme === "auto" ? "dark" : theme === "dark" ? "light" : "auto")
+            }
+            aria-label="Cycle color theme"
+          >
+            theme: {theme}
+          </button>
+        </nav>
+      </header>
+
+      <main className="page">
+        {view === "Overview" && <OverviewView data={data} />}
+        {view === "People" && <PeopleView data={data} />}
+        {view === "Agents" && (
+          <div className="placeholder">Agents view — where AI agents live — lands in M3.</div>
+        )}
+        {view === "Alerts & Budgets" && (
+          <div className="placeholder">Alerts &amp; Budgets view lands in M3.</div>
+        )}
+        {view === "Connectors" && (
+          <div className="placeholder">Connector coverage matrix lands in M4.</div>
+        )}
+      </main>
+    </>
   );
 }

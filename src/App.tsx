@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import "./theme.css";
 import { generateDataset } from "./data/generate";
+import AgentsView from "./views/AgentsView";
+import AlertsView from "./views/AlertsView";
 import OverviewView from "./views/OverviewView";
 import PeopleView from "./views/PeopleView";
 
@@ -54,11 +56,9 @@ export default function App() {
         {view === "Overview" && <OverviewView data={data} />}
         {view === "People" && <PeopleView data={data} />}
         {view === "Agents" && (
-          <div className="placeholder">Agents view — where AI agents live — lands in M3.</div>
+          <AgentsView data={data} onOpenAlerts={() => setView("Alerts & Budgets")} />
         )}
-        {view === "Alerts & Budgets" && (
-          <div className="placeholder">Alerts &amp; Budgets view lands in M3.</div>
-        )}
+        {view === "Alerts & Budgets" && <AlertsView data={data} />}
         {view === "Connectors" && (
           <div className="placeholder">Connector coverage matrix lands in M4.</div>
         )}

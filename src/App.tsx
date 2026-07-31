@@ -3,6 +3,7 @@ import "./theme.css";
 import { generateDataset } from "./data/generate";
 import AgentsView from "./views/AgentsView";
 import AlertsView from "./views/AlertsView";
+import ConnectorsView from "./views/ConnectorsView";
 import OverviewView from "./views/OverviewView";
 import PeopleView from "./views/PeopleView";
 
@@ -10,10 +11,25 @@ const VIEWS = ["Overview", "People", "Agents", "Alerts & Budgets", "Connectors"]
 type View = (typeof VIEWS)[number];
 type Theme = "auto" | "light" | "dark";
 
+const slug = (v: View) => v.toLowerCase().replace(/[^a-z]+/g, "-");
+const fromHash = (): View =>
+  VIEWS.find((v) => `#${slug(v)}` === window.location.hash) ?? "Overview";
+
 export default function App() {
   const data = useMemo(() => generateDataset(), []);
-  const [view, setView] = useState<View>("Overview");
+  const [view, setViewState] = useState<View>(fromHash);
   const [theme, setTheme] = useState<Theme>("auto");
+
+  const setView = (v: View) => {
+    setViewState(v);
+    window.history.replaceState(null, "", `#${slug(v)}`);
+  };
+
+  useEffect(() => {
+    const onHash = () => setViewState(fromHash());
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -59,9 +75,7 @@ export default function App() {
           <AgentsView data={data} onOpenAlerts={() => setView("Alerts & Budgets")} />
         )}
         {view === "Alerts & Budgets" && <AlertsView data={data} />}
-        {view === "Connectors" && (
-          <div className="placeholder">Connector coverage matrix lands in M4.</div>
-        )}
+        {view === "Connectors" && <ConnectorsView />}
       </main>
     </>
   );

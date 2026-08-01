@@ -1,6 +1,7 @@
 import type { Dataset } from "../data/types";
 import { computeRecommendations } from "../data/generate";
 import { teamBudgetStatus } from "../lib/aggregate";
+import { DEFAULT_ALERT_CONFIG, type AlertConfig } from "../lib/alerts";
 import { pct, shortDate, usd, usdFull } from "../ui/format";
 
 const SEV_ICON = { critical: "▲", warning: "◆", info: "●" } as const;
@@ -11,7 +12,15 @@ const KIND_LABEL = {
   "prompt-caching": "Prompt caching",
 } as const;
 
-export default function AlertsView({ data }: { data: Dataset }) {
+export default function AlertsView({
+  data,
+  config,
+  onConfigChange,
+}: {
+  data: Dataset;
+  config: AlertConfig;
+  onConfigChange: (c: AlertConfig) => void;
+}) {
   const budgets = teamBudgetStatus(data);
   const recs = computeRecommendations(data);
   const totalSavings = recs.reduce((s, r) => s + r.monthlySavings, 0);
@@ -72,6 +81,77 @@ export default function AlertsView({ data }: { data: Dataset }) {
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="card">
+        <h2>Alert rules</h2>
+        <p className="sub">
+          Alerts recompute live from these thresholds and budgets — tune them and watch the
+          ticker, KPIs, and anomaly badges follow. Saved in your browser.
+        </p>
+        <div className="rules-grid">
+          <label className="rule">
+            <span>Budget warning above</span>
+            <span className="rule-input">
+              <input
+                type="number"
+                min={10}
+                step={5}
+                value={Math.round(config.budgetWarnAt * 100)}
+                onChange={(e) =>
+                  onConfigChange({ ...config, budgetWarnAt: Number(e.target.value) / 100 })
+                }
+              />
+              <span className="unit">% of budget</span>
+            </span>
+          </label>
+          <label className="rule">
+            <span>Agent anomaly above</span>
+            <span className="rule-input">
+              <input
+                type="number"
+                min={1.5}
+                step={0.5}
+                value={config.anomalyMultiplier}
+                onChange={(e) =>
+                  onConfigChange({ ...config, anomalyMultiplier: Number(e.target.value) })
+                }
+              />
+              <span className="unit">× median daily cost</span>
+            </span>
+          </label>
+          {budgets.map((b) => (
+            <label className="rule" key={b.team}>
+              <span>{b.team} budget</span>
+              <span className="rule-input">
+                <span className="unit">$</span>
+                <input
+                  type="number"
+                  min={100}
+                  step={100}
+                  value={b.limit}
+                  onChange={(e) =>
+                    onConfigChange({
+                      ...config,
+                      budgetOverrides: {
+                        ...config.budgetOverrides,
+                        [b.team]: Number(e.target.value),
+                      },
+                    })
+                  }
+                />
+                <span className="unit">/mo</span>
+              </span>
+            </label>
+          ))}
+        </div>
+        <button
+          className="import-btn"
+          style={{ marginTop: 10 }}
+          onClick={() => onConfigChange(DEFAULT_ALERT_CONFIG)}
+        >
+          Reset to defaults
+        </button>
       </div>
 
       <div className="card">

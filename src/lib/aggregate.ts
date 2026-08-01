@@ -123,7 +123,7 @@ export interface AgentSummary {
   anomaly?: { date: string; cost: number; ratio: number };
 }
 
-export function agentSummaries(data: Dataset): AgentSummary[] {
+export function agentSummaries(data: Dataset, anomalyMultiplier = 3): AgentSummary[] {
   const mtd = monthRecords(data);
   const personName = new Map(data.people.map((p) => [p.id, p.name]));
   const personTeam = new Map(data.people.map((p) => [p.id, p.team]));
@@ -152,7 +152,7 @@ export function agentSummaries(data: Dataset): AgentSummary[] {
         workload: agent.workload,
         mtdCost: mtd.filter((r) => r.agentId === agent.id).reduce((s, r) => s + r.cost, 0),
         daily,
-        anomaly: ratio > 3 ? { date: worst.date, cost: worst.cost, ratio } : undefined,
+        anomaly: ratio > anomalyMultiplier ? { date: worst.date, cost: worst.cost, ratio } : undefined,
       };
     })
     .sort((a, b) => b.mtdCost - a.mtdCost);

@@ -15,7 +15,8 @@ export type Team =
   | "Design"
   | "Marketing"
   | "Sales Ops"
-  | "Finance";
+  | "Finance"
+  | "Unattributed";
 
 export type ProviderId =
   | "aws-bedrock"

@@ -43,7 +43,7 @@ const PROVIDERS: Provider[] = [
 ];
 
 /** Anthropic prices are real list prices ($/MTok); others are plausible mocks. */
-const MODELS: ModelPrice[] = [
+export const MODELS: ModelPrice[] = [
   { id: "claude-opus-5", vendor: "Anthropic", inputPerM: 5, outputPerM: 25, tier: "frontier" },
   { id: "claude-sonnet-5", vendor: "Anthropic", inputPerM: 3, outputPerM: 15, tier: "frontier" },
   { id: "claude-haiku-4-5", vendor: "Anthropic", inputPerM: 1, outputPerM: 5, tier: "mini" },

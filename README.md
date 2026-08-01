@@ -48,6 +48,25 @@ Bonus: click **theme** (top right) to show the dark mode — same validated pale
 
 ![Overview dark](docs/screenshots/overview-dark.png)
 
+## Live Anthropic connector (M5)
+
+The first real connector: pull your organization's actual Anthropic usage and
+cost via the [Admin Usage & Cost API](https://platform.claude.com/docs/en/manage-claude/usage-cost-api)
+and overlay it on the dashboard.
+
+```bash
+# 1. Create an Admin API key in the Anthropic Console
+#    (Settings → Organization → API keys — requires the admin role)
+# 2. Fetch a 30-day snapshot (the key stays in your env; never written to disk):
+ANTHROPIC_ADMIN_KEY=sk-ant-admin-... node scripts/fetch-anthropic.mjs
+# 3. Reload the dashboard — a "live · anthropic" badge appears and the
+#    Anthropic API provider now shows your real spend.
+```
+
+Daily costs are **reconciled to the billed cost report** (records are scaled so
+each day sums exactly to what Anthropic billed); without a cost report the app
+falls back to tokens × list price. Snapshots live in `public/live/` (gitignored).
+
 ## How it's built
 
 - **Vite + React + TypeScript**, Recharts for the stacked trend and provider bars.

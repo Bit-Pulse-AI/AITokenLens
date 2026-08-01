@@ -7,7 +7,8 @@ export type Role =
   | "Designer"
   | "Business Owner"
   | "Data Analyst"
-  | "Marketing Manager";
+  | "Marketing Manager"
+  | "Member";
 
 export type Team =
   | "Platform Engineering"

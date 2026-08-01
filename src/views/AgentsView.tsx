@@ -5,12 +5,14 @@ import { shortDate, usdFull } from "../ui/format";
 
 export default function AgentsView({
   data,
+  anomalyMultiplier,
   onOpenAlerts,
 }: {
   data: Dataset;
+  anomalyMultiplier: number;
   onOpenAlerts: () => void;
 }) {
-  const agents = agentSummaries(data);
+  const agents = agentSummaries(data, anomalyMultiplier);
   const mtdTotal = agents.reduce((s, a) => s + a.mtdCost, 0);
 
   return (

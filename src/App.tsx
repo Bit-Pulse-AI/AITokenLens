@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import "./theme.css";
 import { mapAnthropicLive, mergeLiveAnthropic, type LiveSnapshot } from "./data/anthropicLive";
 import { mergeChatgptImport, type ImportedUser } from "./data/chatgptImport";
+import { computeAlerts, DEFAULT_ALERT_CONFIG, effectiveBudgets, type AlertConfig } from "./lib/alerts";
 import { generateDataset } from "./data/generate";
 import AgentsView from "./views/AgentsView";
 import AlertsView from "./views/AlertsView";
@@ -26,12 +27,27 @@ export default function App() {
       .catch(() => {});
   }, []);
   const [csvUsers, setCsvUsers] = useState<ImportedUser[] | null>(null);
+  const [alertConfig, setAlertConfig] = useState<AlertConfig>(() => {
+    try {
+      const saved = localStorage.getItem("aitokenlens-alert-config");
+      return saved ? { ...DEFAULT_ALERT_CONFIG, ...JSON.parse(saved) } : DEFAULT_ALERT_CONFIG;
+    } catch {
+      return DEFAULT_ALERT_CONFIG;
+    }
+  });
+  useEffect(() => {
+    localStorage.setItem("aitokenlens-alert-config", JSON.stringify(alertConfig));
+  }, [alertConfig]);
   const data = useMemo(() => {
     let d = generateDataset();
     if (live) d = mergeLiveAnthropic(d, mapAnthropicLive(live.usage, live.cost));
     if (csvUsers) d = mergeChatgptImport(d, csvUsers, d.generatedAt.slice(0, 7));
-    return d;
-  }, [live, csvUsers]);
+    return {
+      ...d,
+      budgets: effectiveBudgets(d, alertConfig),
+      alerts: computeAlerts(d, alertConfig),
+    };
+  }, [live, csvUsers, alertConfig]);
   const [view, setViewState] = useState<View>(fromHash);
   const [theme, setTheme] = useState<Theme>("auto");
 
@@ -97,9 +113,15 @@ export default function App() {
         {view === "Overview" && <OverviewView data={data} />}
         {view === "People" && <PeopleView data={data} />}
         {view === "Agents" && (
-          <AgentsView data={data} onOpenAlerts={() => setView("Alerts & Budgets")} />
+          <AgentsView
+            data={data}
+            anomalyMultiplier={alertConfig.anomalyMultiplier}
+            onOpenAlerts={() => setView("Alerts & Budgets")}
+          />
         )}
-        {view === "Alerts & Budgets" && <AlertsView data={data} />}
+        {view === "Alerts & Budgets" && (
+          <AlertsView data={data} config={alertConfig} onConfigChange={setAlertConfig} />
+        )}
         {view === "Connectors" && (
           <ConnectorsView importedCount={csvUsers?.length ?? null} onImport={setCsvUsers} />
         )}

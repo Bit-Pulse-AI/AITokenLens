@@ -79,6 +79,14 @@ the People view (department mapped to a team when it matches), and a
 `csv · chatgpt enterprise` badge appears. Parsing happens entirely in the
 browser; nothing is uploaded anywhere.
 
+## Configurable budgets & alerts (M7)
+
+Alerts aren't seeded strings — they're **computed** from editable rules. On the
+**Alerts & Budgets** tab, tune each team's monthly budget, the budget-warning
+threshold, and the agent-anomaly multiplier; the ticker, KPI counts, budget
+bars, and anomaly badges all recompute live. Settings persist in your browser
+(reset button included).
+
 ## How it's built
 
 - **Vite + React + TypeScript**, Recharts for the stacked trend and provider bars.

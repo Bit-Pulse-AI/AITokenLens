@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import "./theme.css";
 import { mapAnthropicLive, mergeLiveAnthropic, type LiveSnapshot } from "./data/anthropicLive";
+import { mergeChatgptImport, type ImportedUser } from "./data/chatgptImport";
 import { generateDataset } from "./data/generate";
 import AgentsView from "./views/AgentsView";
 import AlertsView from "./views/AlertsView";
@@ -24,10 +25,13 @@ export default function App() {
       .then((snap) => snap?.usage && setLive(snap))
       .catch(() => {});
   }, []);
+  const [csvUsers, setCsvUsers] = useState<ImportedUser[] | null>(null);
   const data = useMemo(() => {
-    const base = generateDataset();
-    return live ? mergeLiveAnthropic(base, mapAnthropicLive(live.usage, live.cost)) : base;
-  }, [live]);
+    let d = generateDataset();
+    if (live) d = mergeLiveAnthropic(d, mapAnthropicLive(live.usage, live.cost));
+    if (csvUsers) d = mergeChatgptImport(d, csvUsers, d.generatedAt.slice(0, 7));
+    return d;
+  }, [live, csvUsers]);
   const [view, setViewState] = useState<View>(fromHash);
   const [theme, setTheme] = useState<Theme>("auto");
 
@@ -61,6 +65,11 @@ export default function App() {
                 ● live · anthropic
               </span>
             )}
+            {csvUsers && (
+              <span className="live-badge" title={`${csvUsers.length} members imported`}>
+                ● csv · chatgpt enterprise
+              </span>
+            )}
             AI spend ledger · Acme Corp · July 2026
           </span>
         </div>
@@ -91,7 +100,9 @@ export default function App() {
           <AgentsView data={data} onOpenAlerts={() => setView("Alerts & Budgets")} />
         )}
         {view === "Alerts & Budgets" && <AlertsView data={data} />}
-        {view === "Connectors" && <ConnectorsView />}
+        {view === "Connectors" && (
+          <ConnectorsView importedCount={csvUsers?.length ?? null} onImport={setCsvUsers} />
+        )}
       </main>
     </>
   );

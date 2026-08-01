@@ -67,6 +67,18 @@ Daily costs are **reconciled to the billed cost report** (records are scaled so
 each day sums exactly to what Anthropic billed); without a cost report the app
 falls back to tokens × list price. Snapshots live in `public/live/` (gitignored).
 
+## CSV import connector (M6)
+
+The Tier-3 story made real: ChatGPT Enterprise keeps per-member data in its
+admin console, so AITokenLens imports the export. On the **Connectors** tab,
+click *Import ChatGPT Enterprise CSV…* and pick a workspace-members export
+(email / name / department / status columns, any order — try
+[`sample-chatgpt-export.csv`](public/sample-chatgpt-export.csv)). Active
+members replace the mock seat spend with real per-person allocation, appear in
+the People view (department mapped to a team when it matches), and a
+`csv · chatgpt enterprise` badge appears. Parsing happens entirely in the
+browser; nothing is uploaded anywhere.
+
 ## How it's built
 
 - **Vite + React + TypeScript**, Recharts for the stacked trend and provider bars.

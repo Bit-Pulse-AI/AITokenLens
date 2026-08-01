@@ -1,4 +1,6 @@
+import { useRef, useState } from "react";
 import { CONNECTORS, TIER_META, type Connector, type ConnectorTier } from "../data/connectors";
+import { parseChatgptCsv, type ImportedUser } from "../data/chatgptImport";
 
 const TIERS: ConnectorTier[] = ["full-api", "allocation", "csv-import"];
 
@@ -15,12 +17,21 @@ function Cover({ value }: { value: boolean | "allocated" }) {
   return <span className="cover cover-no" title="Not available from this vendor">○</span>;
 }
 
-function TierSection({ tier, rows }: { tier: ConnectorTier; rows: Connector[] }) {
+function TierSection({
+  tier,
+  rows,
+  children,
+}: {
+  tier: ConnectorTier;
+  rows: Connector[];
+  children?: React.ReactNode;
+}) {
   const meta = TIER_META[tier];
   return (
     <div className="card">
       <h2>{meta.label}</h2>
       <p className="sub">{meta.blurb}</p>
+      {children}
       <div style={{ overflowX: "auto" }}>
         <table>
           <thead>
@@ -57,8 +68,27 @@ function TierSection({ tier, rows }: { tier: ConnectorTier; rows: Connector[] })
   );
 }
 
-export default function ConnectorsView() {
+export default function ConnectorsView({
+  importedCount,
+  onImport,
+}: {
+  importedCount: number | null;
+  onImport: (users: ImportedUser[]) => void;
+}) {
   const connected = CONNECTORS.filter((c) => c.status === "connected").length;
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+
+  const handleFile = async (file: File | undefined) => {
+    if (!file) return;
+    try {
+      const users = parseChatgptCsv(await file.text());
+      setImportError(null);
+      onImport(users);
+    } catch (e) {
+      setImportError(e instanceof Error ? e.message : "Could not read that file.");
+    }
+  };
   return (
     <div className="grid" style={{ gap: 16 }}>
       <div className="card" style={{ display: "flex", alignItems: "baseline", gap: 18, flexWrap: "wrap" }}>
@@ -74,7 +104,33 @@ export default function ConnectorsView() {
         </span>
       </div>
       {TIERS.map((tier) => (
-        <TierSection key={tier} tier={tier} rows={CONNECTORS.filter((c) => c.tier === tier)} />
+        <TierSection key={tier} tier={tier} rows={CONNECTORS.filter((c) => c.tier === tier)}>
+          {tier === "csv-import" && (
+            <div className="import-row">
+              <button className="import-btn" onClick={() => fileRef.current?.click()}>
+                Import ChatGPT Enterprise CSV…
+              </button>
+              <input
+                ref={fileRef}
+                type="file"
+                accept=".csv,text/csv"
+                style={{ display: "none" }}
+                onChange={(e) => handleFile(e.target.files?.[0])}
+              />
+              {importedCount !== null && (
+                <span className="sev" style={{ color: "var(--delta-good)" }}>
+                  ✓ {importedCount} members imported — seat spend now real
+                </span>
+              )}
+              {importError && (
+                <span className="sev sev-critical" role="alert">▲ {importError}</span>
+              )}
+              <a className="sample-link" href="sample-chatgpt-export.csv" download>
+                sample export
+              </a>
+            </div>
+          )}
+        </TierSection>
       ))}
     </div>
   );

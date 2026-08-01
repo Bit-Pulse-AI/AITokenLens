@@ -382,3 +382,19 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   margin-right: 12px;
   font-weight: 700;
 }
+
+/* ---------- CSV import ---------- */
+.import-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 2px 0 10px; }
+.import-btn {
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+  background: none;
+  border: 1px solid var(--baseline);
+  border-radius: 999px;
+  padding: 5px 14px;
+  cursor: pointer;
+}
+.import-btn:hover { border-color: var(--ink); }
+.sample-link { color: var(--muted); font-size: 12px; }

@@ -1,5 +1,7 @@
 # AITokenLens
 
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+
 **Prototype** — a centralized AI spend & token-cost tracking dashboard for CFOs and finance teams.
 
 One place to see AI costs across all three spend layers:
@@ -98,3 +100,21 @@ bars, and anomaly badges all recompute live. Settings persist in your browser
 ## Status
 
 Built milestone-by-milestone via [issues](../../issues) and [PRs](../../pulls); design doc in [docs/design.md](docs/design.md). The dashboard is a demo of the product vision documented in the accompanying research report (market validation, competitor pricing, and the API integration map behind the Connectors tiers).
+
+## Contributing
+
+Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) and
+[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+
+## Security
+
+This prototype ships no backend and no credentials. The optional Anthropic
+connector reads an admin key from the environment at script runtime and writes
+its snapshot to `public/live/`, which is gitignored — the key is never persisted.
+
+To report a vulnerability, see [SECURITY.md](SECURITY.md).
+
+## License
+
+Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) and
+[NOTICE](NOTICE).
